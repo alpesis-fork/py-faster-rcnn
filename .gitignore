@@ -1,0 +1,13 @@
+# editor
+*.swo
+*.swp
+*.swn
+
+# python
+*.pyc
+
+# ipython notebook
+fasterrcnn/examples/.ipynb_checkpoints/
+
+# docs build
+docs/build/

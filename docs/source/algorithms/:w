@@ -1,0 +1,215 @@
+Convolution
+==============================================================================
+
+
+Key Concepts
+------------------------------
+
+
+Mathematical Equations
+------------------------------
+
+Process Steps
+------------------------------
+
+LayerSetUp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    1. read conv_param from caffe proto: ConvolutionParameter
+
+        - num_output: 
+        - bias_term: [default: true]
+        - pad: [default: 0]
+        - kernel_size: 
+        - stride: [default: 1]
+        - dilation: [default: 1]
+        - pad_h: [default: 0]
+        - pad_w: [default: 0]
+        - kernel_h: 
+        - kernel_w:
+        - stride_h:
+        - stride_w:
+        - group: [default: 1]
+        - weight_filler: 
+        - bias_filler: 
+        - engine: [default: 0]
+        - axis: [default: 1]
+        - force_nd_im2col: [default: false]
+
+    2. set up the params:
+
+        2.1. force_nd_imcol_ = conv_param.force_nd_im2col()
+
+        2.2. channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis())
+
+            - CHECK: -shape.size() < axis() < shape.size()
+            - if axis() < 0: axis + shape.size()
+            - return axis
+
+        2.3. num_spatial_axes_
+
+            num_spatial_axes_ = input->shape.size - first_spatial_axis
+            first_spatial_axis = channel_axis_ + 1 (get the H/W index)
+
+        2.4. bottom_dim_blob_shape(1, num_spatial_axes_ + 1)
+
+        2.5. spatial_dim_blob_shape(1, std::max(num_spatial_axes_, 1))
+
+        2.6. kernel_shape_.Reshape(spatial_dim_blob_shape)
+
+Forward
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- image: (800, 600)
+- padding: (1, 1)
+- channels: (R,G,B)
+
+- kernel: (3, 3)
+- stride: (1, 1)
+- dilation: (1, 1)
+
+Calculations:
+
+- # of outputs = (W - F + 2P)/S + 1
+- spatial_size: [h, w]
+- padding_size: [h, w]
+- kernel_size: [h, w]
+- stride_size: [h, w]
+- n_outputs_w = (spatial_w - kernel_w + 2 * padding_w) / stride_w + 1
+- n_outputs_h = (spatial_h - kernel_h + 2 * padding_h) / stride_h + 1
+
+# of parameters:
+
+- image: [3, 32, 32]
+- kernel: [5, 5]
+- stride: [1, 1]
+- padding: [2, 2]
+- # of kernels: 10
+- # of params = ((kernel_h * kernel_w * channels) + 1) * # of kernels = ((5*5*3)+1)*10 = 760 
+- 1 for bias
+
+For example:
+
+# of feature maps:
+
+- kernel size: (32, 16, 16)
+- image: (256, 256)
+- # of feature maps: 32 * (image_size - kernel_size + 1) = 32 * (256 - 16 + 1) = (32, 241, 241)
+
+# of feature maps:
+
+- spatial_size: [800, 600]
+- kernel_size: [3, 3]
+- padding_size: [1, 1]
+- stride_size: [1, 1]
+- n_outputs_w = (800 - 3 + 2 * 1) / 1 + 1 = 800
+- n_outputs_h = (600 - 3 + 2 * 1) / 1 + 1 = 600
+
+::
+
+    1. initialization
+
+        weight =
+        
+        for bottom.size
+            bottom_data =
+            top_data = 
+
+            for (int n = 0; n < this->num_; ++n)
+                forward_cpu_gemm(bottom_data + n * this->bottom_dim_,
+                                 weight,
+                                 top_data + n * this->top_dim_)
+
+            if (this->bias_term_)
+                bias = this->blobs_[1]->cpu_data()
+                this->forward_cpu_bias(top_data + n * this->top_dim_, bias)
+
+
+    2. forward_cpu_gemm
+
+
+       2.1. im2col
+
+        col_buff = input
+
+        if (!is_1x1_)
+            if (!skip_im2col)
+                conv_im2col_cpu(input, col_buffer_)
+            col_buff = col_buffer_
+
+            # conv_im2col_cpu
+            if (!force_nd_im2col_ && num_spatial_axes_ == 2):
+                im2col_cpu()
+            else:
+                im2col_nd_cpu()
+
+            2.1.1. im2col_cpu()
+
+                output_h = (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
+                output_w = (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
+        
+                channel_size = height * width
+                for channels:
+                for kernel_row:
+                for kernel_col:
+                    input_row = -pad_h + kernel_row * dilation_h
+                    for output_rows:
+                       if (!is_a_ge_zero_and_a_lt_b(input_row, height))
+                         for output_cols:
+                           *(data_col++) = 0
+                       else:
+                         input_col = -pad_w + kernel_col * dilation_w
+                         for output_cols:
+                           
+
+            2.1.2. im2col_nd_cpu()
+                kIm2Col = true
+                im2col_nd_core_cpu()
+
+      2.2. conv
+
+        for group_: (g)
+
+            C: = (weights + weight_offset_ * g ) * (col_buff + col_offset_ * g)
+            - weights: [conv_out_channels_ / group_, conv_out_spatial_dim_]
+            - X: [conv_out_spatial_dim, kernel_dim_]
+
+            gemm():
+            - M: conv_out_channels_ / group_
+            - N: conv_out_spatial_dim_
+            - K: kernel_dim_
+            - alpha: 1
+            - A: weights + weight_offset_ * g
+            - B: col_buff + col_offset_ * g
+            - beta: 0
+            - C: output + output_offset_ * g
+
+
+    3. forward_cpu_bias
+
+        output = bias * bias_multiplier_ + output
+        - bias: [num_output_, out_spatial_dim_]
+        - bias_multiplier: [out_spatial_dim, 1]
+
+        gemm():
+        - M: num_output_
+        - N: out_spatial_dim_
+        - K: 1
+        - alpha: 1
+        - A: bias
+        - B: bias_multiplier_
+        - beta: 1
+        - C: output
+
+
+Backward
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Source Codes
+------------------------------
+
+
+Test Examples
+------------------------------
