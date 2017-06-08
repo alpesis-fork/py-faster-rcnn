@@ -1,0 +1,21 @@
+# net
+net: "examples/mnist/lenet_dev.prototxt"
+# test iter
+# test_iter: 1
+# test_interval: 1  
+# loss
+base_lr: 0.01
+momentum: 0.9
+weight_decay: 0.0005
+# learning rate
+lr_policy: "inv"
+gamma: 0.0001
+power: 0.75
+# display
+display: 1
+max_iter: 1
+# snapshot
+snapshot: 1
+snapshot_prefix: "examples/mnist/lenet"
+# solver mode: CPU / GPU
+solver_mode: CPU
