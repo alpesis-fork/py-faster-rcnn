@@ -24,6 +24,8 @@ import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
 
+
+
 CLASSES = ('__background__',
            'aeroplane', 'bicycle', 'bird', 'boat',
            'bottle', 'bus', 'car', 'cat', 'chair',
@@ -141,11 +143,17 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
-    im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
-                '001763.jpg', '004545.jpg']
+    # im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
+    #             '001763.jpg', '004545.jpg']
+    im_names = ['000456.jpg']
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Demo for data/demo/{}'.format(im_name)
         demo(net, im_name)
 
+    import caffe2wellframe.weights_extractor
+    import caffe2wellframe.outs_extractor
+    caffe2wellframe.weights_extractor.extract_weights(net, './check/')
+    caffe2wellframe.outs_extractor.extract_outputs(net, './check/')
+    
     plt.show()
