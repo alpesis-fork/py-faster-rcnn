@@ -19,43 +19,57 @@ namespace caffe {
 // Reference convolution for checking results:
 // accumulate through explicit loops over input, output, and filters.
 template <typename Dtype>
-void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
-    const vector<shared_ptr<Blob<Dtype> > >& weights,
-    Blob<Dtype>* out) {
+void caffe_conv(const Blob<Dtype>* in, 
+                ConvolutionParameter* conv_param,
+                const vector<shared_ptr<Blob<Dtype> > >& weights,
+                Blob<Dtype>* out) 
+{
   const bool has_depth = (out->num_axes() == 5);
   if (!has_depth) { CHECK_EQ(4, out->num_axes()); }
   // Kernel size, stride, and pad
   int kernel_h, kernel_w;
-  if (conv_param->has_kernel_h() || conv_param->has_kernel_w()) {
+  if (conv_param->has_kernel_h() || conv_param->has_kernel_w()) 
+  {
     kernel_h = conv_param->kernel_h();
     kernel_w = conv_param->kernel_w();
-  } else {
+  } 
+  else 
+  {
     kernel_h = kernel_w = conv_param->kernel_size(0);
   }
   int pad_h, pad_w;
-  if (conv_param->has_pad_h() || conv_param->has_pad_w()) {
+  if (conv_param->has_pad_h() || conv_param->has_pad_w()) 
+  {
     pad_h = conv_param->pad_h();
     pad_w = conv_param->pad_w();
-  } else {
+  } 
+  else 
+  {
     pad_h = pad_w = conv_param->pad_size() ? conv_param->pad(0) : 0;
   }
   int stride_h, stride_w;
-  if (conv_param->has_stride_h() || conv_param->has_stride_w()) {
+  if (conv_param->has_stride_h() || conv_param->has_stride_w()) 
+  {
     stride_h = conv_param->stride_h();
     stride_w = conv_param->stride_w();
-  } else {
+  } 
+  else 
+  {
     stride_h = stride_w = conv_param->stride_size() ? conv_param->stride(0) : 1;
   }
   int dilation_h, dilation_w;
   dilation_h = dilation_w = conv_param->dilation_size() ?
                             conv_param->dilation(0) : 1;
   int kernel_d, pad_d, stride_d, dilation_d;
-  if (has_depth) {
+  if (has_depth) 
+  {
     kernel_d = kernel_h;
     stride_d = stride_h;
     pad_d = pad_h;
     dilation_d = dilation_h;
-  } else {
+  } 
+  else 
+  {
     kernel_d = stride_d = dilation_d = 1;
     pad_d = 0;
   }

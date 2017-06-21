@@ -3,3 +3,13 @@
 lib/build
 lib/pycocotools/_mask.c
 lib/pycocotools/_mask.so
+
+# caffemodel
+*.caffemodel
+
+# data
+check/*
+*.tgz
+
+lib/dist/
+lib/fast_rcnn.egg-info/

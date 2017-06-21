@@ -1,0 +1,26 @@
+name: "DummyNet"
+layer{
+  name: "data"
+  name: "hidden_seed"
+  top: "hidden_seed"
+  dummy_data_param {
+    shape {dim: 300 dim: 250}
+    data_filler {type: "constant" value: 0}
+  }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  convolution_param {
+    num_output: 20
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}

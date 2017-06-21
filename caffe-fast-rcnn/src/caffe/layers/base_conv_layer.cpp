@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <algorithm>
 #include <vector>
 
@@ -24,14 +25,17 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Setup filter kernel dimensions (kernel_shape_).
   kernel_shape_.Reshape(spatial_dim_blob_shape);
   int* kernel_shape_data = kernel_shape_.mutable_cpu_data();
-  if (conv_param.has_kernel_h() || conv_param.has_kernel_w()) {
+  if (conv_param.has_kernel_h() || conv_param.has_kernel_w()) 
+  {
     CHECK_EQ(num_spatial_axes_, 2)
         << "kernel_h & kernel_w can only be used for 2D convolution.";
     CHECK_EQ(0, conv_param.kernel_size_size())
         << "Either kernel_size or kernel_h/w should be specified; not both.";
     kernel_shape_data[0] = conv_param.kernel_h();
     kernel_shape_data[1] = conv_param.kernel_w();
-  } else {
+  } 
+  else 
+  {
     const int num_kernel_dims = conv_param.kernel_size_size();
     CHECK(num_kernel_dims == 1 || num_kernel_dims == num_spatial_axes_)
         << "kernel_size must be specified once, or once per spatial dimension "
@@ -55,7 +59,9 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         << "Either stride or stride_h/w should be specified; not both.";
     stride_data[0] = conv_param.stride_h();
     stride_data[1] = conv_param.stride_w();
-  } else {
+  } 
+  else 
+  {
     const int num_stride_dims = conv_param.stride_size();
     CHECK(num_stride_dims == 0 || num_stride_dims == 1 ||
           num_stride_dims == num_spatial_axes_)
@@ -255,7 +261,11 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
-    const Dtype* weights, Dtype* output, bool skip_im2col) {
+                                                   const Dtype* weights, 
+                                                   Dtype* output, 
+                                                   bool skip_im2col) 
+{
+  
   const Dtype* col_buff = input;
   if (!is_1x1_) {
     if (!skip_im2col) {
@@ -263,20 +273,55 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     }
     col_buff = col_buffer_.cpu_data();
   }
+
+  FILE * fin = fopen("/tmp/in.txt", "w");
+  fprintf(fin, "1,");
+  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[0]); 
+  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[1]); 
+  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[2]); 
+  int in_capacity = bottom_dim_;
+  for (int i = 0; i < in_capacity; ++i)
+    fprintf(fin, "%f,", input[i]);
+  fclose(fin);
+ 
+  FILE * fcol = fopen("/tmp/col.txt", "w");
+  fprintf(fcol, "1,");
+  fprintf(fcol, "%d,", col_buffer_shape_[0]);
+  fprintf(fcol, "%d,", col_buffer_shape_[1]);
+  fprintf(fcol, "%d,", col_buffer_shape_[2]);
+  int col_capacity = col_buffer_shape_[0] * col_buffer_shape_[1] * col_buffer_shape_[2];
+  for (int i = 0; i < col_capacity; ++i)
+    fprintf(fcol, "%f,", col_buffer_.cpu_data()[i]);
+  fclose(fcol);
+
   for (int g = 0; g < group_; ++g) {
-    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, conv_out_channels_ /
-        group_, conv_out_spatial_dim_, kernel_dim_,
-        (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)0., output + output_offset_ * g);
+    caffe_cpu_gemm<Dtype>(CblasNoTrans, 
+                          CblasNoTrans, 
+                          conv_out_channels_ / group_, 
+                          conv_out_spatial_dim_, 
+                          kernel_dim_,
+                          (Dtype)1., 
+                          weights + weight_offset_ * g, 
+                          col_buff + col_offset_ * g,
+                          (Dtype)0., 
+                          output + output_offset_ * g);
   }
 }
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
-    const Dtype* bias) {
-  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
-      out_spatial_dim_, 1, (Dtype)1., bias, bias_multiplier_.cpu_data(),
-      (Dtype)1., output);
+                                                   const Dtype* bias) 
+{
+  caffe_cpu_gemm<Dtype>(CblasNoTrans, 
+                        CblasNoTrans, 
+                        num_output_,
+                        out_spatial_dim_, 
+                        1, 
+                        (Dtype)1., 
+                        bias, 
+                        bias_multiplier_.cpu_data(),
+                        (Dtype)1., 
+                        output);
 }
 
 template <typename Dtype>

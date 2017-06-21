@@ -16,25 +16,62 @@ void caffe_cpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
     float* C) {
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
-  cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
-      ldb, beta, C, N);
+  cblas_sgemm(CblasRowMajor, 
+              TransA, 
+              TransB, 
+              M, 
+              N, 
+              K, 
+              alpha, 
+              A, 
+              lda, 
+              B,
+              ldb, 
+              beta, 
+              C, 
+              N);
 }
 
 template<>
 void caffe_cpu_gemm<double>(const CBLAS_TRANSPOSE TransA,
-    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
-    const double alpha, const double* A, const double* B, const double beta,
-    double* C) {
+                            const CBLAS_TRANSPOSE TransB, 
+                            const int M, 
+                            const int N, 
+                            const int K,
+                            const double alpha, 
+                            const double* A, 
+                            const double* B, 
+                            const double beta,
+                            double* C) 
+{
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
-  cblas_dgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
-      ldb, beta, C, N);
+  cblas_dgemm(CblasRowMajor, 
+              TransA, 
+              TransB, 
+              M, 
+              N, 
+              K, 
+              alpha, 
+              A, 
+              lda, 
+              B,
+              ldb, 
+              beta, 
+              C, 
+              N);
 }
 
 template <>
-void caffe_cpu_gemv<float>(const CBLAS_TRANSPOSE TransA, const int M,
-    const int N, const float alpha, const float* A, const float* x,
-    const float beta, float* y) {
+void caffe_cpu_gemv<float>(const CBLAS_TRANSPOSE TransA, 
+                           const int M,
+                           const int N, 
+                           const float alpha, 
+                           const float* A, 
+                           const float* x,
+                           const float beta, 
+                           float* y) 
+{
   cblas_sgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1);
 }
 
