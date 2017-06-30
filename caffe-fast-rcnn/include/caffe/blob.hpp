@@ -158,8 +158,11 @@ class Blob
     return shape(index);
   }
 
-  inline int offset(const int n, const int c = 0, const int h = 0,
-      const int w = 0) const {
+  inline int offset(const int n, 
+                    const int c = 0, 
+                    const int h = 0,
+                    const int w = 0) const 
+  {
     CHECK_GE(n, 0);
     CHECK_LE(n, num());
     CHECK_GE(channels(), 0);
@@ -171,12 +174,15 @@ class Blob
     return ((n * channels() + c) * height() + h) * width() + w;
   }
 
-  inline int offset(const vector<int>& indices) const {
+  inline int offset(const vector<int>& indices) const 
+  {
     CHECK_LE(indices.size(), num_axes());
     int offset = 0;
-    for (int i = 0; i < num_axes(); ++i) {
+    for (int i = 0; i < num_axes(); ++i) 
+    {
       offset *= shape(i);
-      if (indices.size() > i) {
+      if (indices.size() > i) 
+      {
         CHECK_GE(indices[i], 0);
         CHECK_LT(indices[i], shape(i));
         offset += indices[i];

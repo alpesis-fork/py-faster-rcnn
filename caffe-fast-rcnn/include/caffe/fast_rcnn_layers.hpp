@@ -22,14 +22,14 @@ namespace caffe {
 /* ROIPoolingLayer - Region of Interest Pooling Layer
 */
 template <typename Dtype>
-class ROIPoolingLayer : public Layer<Dtype> {
+class ROIPoolingLayer : public Layer<Dtype> 
+{
  public:
-  explicit ROIPoolingLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
+  explicit ROIPoolingLayer(const LayerParameter& param) : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                          const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "ROIPooling"; }
 
@@ -40,13 +40,15 @@ class ROIPoolingLayer : public Layer<Dtype> {
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                           const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                           const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+                            const vector<bool>& propagate_down, 
+                            const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+                            const vector<bool>& propagate_down, 
+                            const vector<Blob<Dtype>*>& bottom);
 
   int channels_;
   int height_;
@@ -60,12 +62,11 @@ class ROIPoolingLayer : public Layer<Dtype> {
 template <typename Dtype>
 class SmoothL1LossLayer : public LossLayer<Dtype> {
  public:
-  explicit SmoothL1LossLayer(const LayerParameter& param)
-      : LossLayer<Dtype>(param), diff_() {}
+  explicit SmoothL1LossLayer(const LayerParameter& param) : LossLayer<Dtype>(param), diff_() {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                          const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "SmoothL1Loss"; }
 
@@ -77,20 +78,23 @@ class SmoothL1LossLayer : public LossLayer<Dtype> {
    * Unlike most loss layers, in the SmoothL1LossLayer we can backpropagate
    * to both inputs -- override to return true and always allow force_backward.
    */
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
+  virtual inline bool AllowForceBackward(const int bottom_index) const 
+  {
     return true;
   }
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                           const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+                           const vector<Blob<Dtype>*>& top);
 
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+                            const vector<bool>& propagate_down, 
+                            const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+                            const vector<bool>& propagate_down, 
+                            const vector<Blob<Dtype>*>& bottom);
 
   Blob<Dtype> diff_;
   Blob<Dtype> errors_;

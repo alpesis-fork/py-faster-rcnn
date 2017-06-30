@@ -274,26 +274,6 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     col_buff = col_buffer_.cpu_data();
   }
 
-  FILE * fin = fopen("/tmp/in.txt", "w");
-  fprintf(fin, "1,");
-  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[0]); 
-  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[1]); 
-  fprintf(fin, "%d,", conv_input_shape_.cpu_data()[2]); 
-  int in_capacity = bottom_dim_;
-  for (int i = 0; i < in_capacity; ++i)
-    fprintf(fin, "%f,", input[i]);
-  fclose(fin);
- 
-  FILE * fcol = fopen("/tmp/col.txt", "w");
-  fprintf(fcol, "1,");
-  fprintf(fcol, "%d,", col_buffer_shape_[0]);
-  fprintf(fcol, "%d,", col_buffer_shape_[1]);
-  fprintf(fcol, "%d,", col_buffer_shape_[2]);
-  int col_capacity = col_buffer_shape_[0] * col_buffer_shape_[1] * col_buffer_shape_[2];
-  for (int i = 0; i < col_capacity; ++i)
-    fprintf(fcol, "%f,", col_buffer_.cpu_data()[i]);
-  fclose(fcol);
-
   for (int g = 0; g < group_; ++g) {
     caffe_cpu_gemm<Dtype>(CblasNoTrans, 
                           CblasNoTrans, 

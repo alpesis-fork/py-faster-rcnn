@@ -151,9 +151,9 @@ if __name__ == '__main__':
         print 'Demo for data/demo/{}'.format(im_name)
         demo(net, im_name)
 
-    import caffe2wellframe.weights_extractor
-    import caffe2wellframe.outs_extractor
-    caffe2wellframe.weights_extractor.extract_weights(net, './check/')
-    caffe2wellframe.outs_extractor.extract_outputs(net, './check/')
+    # import caffe2wellframe.weights_extractor
+    # import caffe2wellframe.outs_extractor
+    # caffe2wellframe.weights_extractor.extract_weights(net, './check/')
+    # caffe2wellframe.outs_extractor.extract_outputs(net, './check/')
     
     plt.show()

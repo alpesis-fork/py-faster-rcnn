@@ -18,12 +18,11 @@ namespace caffe {
 
 template <typename Dtype>
 void ROIPoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                        const vector<Blob<Dtype>*>& top) 
+{
   ROIPoolingParameter roi_pool_param = this->layer_param_.roi_pooling_param();
-  CHECK_GT(roi_pool_param.pooled_h(), 0)
-      << "pooled_h must be > 0";
-  CHECK_GT(roi_pool_param.pooled_w(), 0)
-      << "pooled_w must be > 0";
+  CHECK_GT(roi_pool_param.pooled_h(), 0) << "pooled_h must be > 0";
+  CHECK_GT(roi_pool_param.pooled_w(), 0) << "pooled_w must be > 0";
   pooled_height_ = roi_pool_param.pooled_h();
   pooled_width_ = roi_pool_param.pooled_w();
   spatial_scale_ = roi_pool_param.spatial_scale();
@@ -32,19 +31,19 @@ void ROIPoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ROIPoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                     const vector<Blob<Dtype>*>& top) 
+{
   channels_ = bottom[0]->channels();
   height_ = bottom[0]->height();
   width_ = bottom[0]->width();
-  top[0]->Reshape(bottom[1]->num(), channels_, pooled_height_,
-      pooled_width_);
-  max_idx_.Reshape(bottom[1]->num(), channels_, pooled_height_,
-      pooled_width_);
+  top[0]->Reshape(bottom[1]->num(), channels_, pooled_height_, pooled_width_);
+  max_idx_.Reshape(bottom[1]->num(), channels_, pooled_height_, pooled_width_);
 }
 
 template <typename Dtype>
 void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                         const vector<Blob<Dtype>*>& top) 
+{
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* bottom_rois = bottom[1]->cpu_data();
   // Number of ROIs
@@ -56,8 +55,10 @@ void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   int* argmax_data = max_idx_.mutable_cpu_data();
   caffe_set(top_count, -1, argmax_data);
 
+
   // For each ROI R = [batch_index x1 y1 x2 y2]: max pool over R
-  for (int n = 0; n < num_rois; ++n) {
+  for (int n = 0; n < num_rois; ++n) 
+  {
     int roi_batch_ind = bottom_rois[0];
     int roi_start_w = round(bottom_rois[1] * spatial_scale_);
     int roi_start_h = round(bottom_rois[2] * spatial_scale_);
@@ -68,10 +69,9 @@ void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     int roi_height = max(roi_end_h - roi_start_h + 1, 1);
     int roi_width = max(roi_end_w - roi_start_w + 1, 1);
-    const Dtype bin_size_h = static_cast<Dtype>(roi_height)
-                             / static_cast<Dtype>(pooled_height_);
-    const Dtype bin_size_w = static_cast<Dtype>(roi_width)
-                             / static_cast<Dtype>(pooled_width_);
+    const Dtype bin_size_h = static_cast<Dtype>(roi_height) / static_cast<Dtype>(pooled_height_);
+    const Dtype bin_size_w = static_cast<Dtype>(roi_width) / static_cast<Dtype>(pooled_width_);
+
 
     const Dtype* batch_data = bottom_data + bottom[0]->offset(roi_batch_ind);
 
@@ -81,14 +81,10 @@ void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           // Compute pooling region for this output unit:
           //  start (included) = floor(ph * roi_height / pooled_height_)
           //  end (excluded) = ceil((ph + 1) * roi_height / pooled_height_)
-          int hstart = static_cast<int>(floor(static_cast<Dtype>(ph)
-                                              * bin_size_h));
-          int wstart = static_cast<int>(floor(static_cast<Dtype>(pw)
-                                              * bin_size_w));
-          int hend = static_cast<int>(ceil(static_cast<Dtype>(ph + 1)
-                                           * bin_size_h));
-          int wend = static_cast<int>(ceil(static_cast<Dtype>(pw + 1)
-                                           * bin_size_w));
+          int hstart = static_cast<int>(floor(static_cast<Dtype>(ph) * bin_size_h));
+          int wstart = static_cast<int>(floor(static_cast<Dtype>(pw) * bin_size_w));
+          int hend = static_cast<int>(ceil(static_cast<Dtype>(ph + 1) * bin_size_h));
+          int wend = static_cast<int>(ceil(static_cast<Dtype>(pw + 1) * bin_size_w));
 
           hstart = min(max(hstart + roi_start_h, 0), height_);
           hend = min(max(hend + roi_start_h, 0), height_);
@@ -98,7 +94,8 @@ void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           bool is_empty = (hend <= hstart) || (wend <= wstart);
 
           const int pool_index = ph * pooled_width_ + pw;
-          if (is_empty) {
+          if (is_empty) 
+          {
             top_data[pool_index] = 0;
             argmax_data[pool_index] = -1;
           }
