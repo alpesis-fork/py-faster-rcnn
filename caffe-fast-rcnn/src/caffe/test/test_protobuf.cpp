@@ -10,10 +10,12 @@
 #include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
 class ProtoTest : public ::testing::Test {};
 
-TEST_F(ProtoTest, TestSerialization) {
+TEST_F(ProtoTest, TestSerialization) 
+{
   LayerParameter param;
   param.set_name("test");
   param.set_type("Test");
@@ -26,4 +28,5 @@ TEST_F(ProtoTest, TestSerialization) {
   EXPECT_TRUE(true);
 }
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

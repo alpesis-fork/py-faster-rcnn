@@ -13,3 +13,15 @@ check/*
 
 lib/dist/
 lib/fast_rcnn.egg-info/
+
+# editor
+*.swp
+*.swo
+*.swn
+*.swm
+
+# log
+log
+
+# build
+caffe-fast-rcnn/_build/

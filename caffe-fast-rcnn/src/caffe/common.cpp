@@ -8,22 +8,28 @@
 #include "caffe/util/rng.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
 // Make sure each thread can have different values.
 static boost::thread_specific_ptr<Caffe> thread_instance_;
 
-Caffe& Caffe::Get() {
-  if (!thread_instance_.get()) {
+Caffe& Caffe::Get() 
+{
+  if (!thread_instance_.get()) 
+  {
     thread_instance_.reset(new Caffe());
   }
   return *(thread_instance_.get());
 }
 
+
 // random seeding
-int64_t cluster_seedgen(void) {
+int64_t cluster_seedgen(void) 
+{
   int64_t s, seed, pid;
   FILE* f = fopen("/dev/urandom", "rb");
-  if (f && fread(&seed, 1, sizeof(seed), f) == sizeof(seed)) {
+  if (f && fread(&seed, 1, sizeof(seed), f) == sizeof(seed)) 
+  {
     fclose(f);
     return seed;
   }
@@ -40,7 +46,8 @@ int64_t cluster_seedgen(void) {
 }
 
 
-void GlobalInit(int* pargc, char*** pargv) {
+void GlobalInit(int* pargc, char*** pargv) 
+{
   // Google flags.
   ::gflags::ParseCommandLineFlags(pargc, pargv, true);
   // Google logging.
@@ -49,85 +56,113 @@ void GlobalInit(int* pargc, char*** pargv) {
   ::google::InstallFailureSignalHandler();
 }
 
+
 #ifdef CPU_ONLY  // CPU-only Caffe.
 
-Caffe::Caffe()
-    : random_generator_(), mode_(Caffe::CPU),
-      solver_count_(1), root_solver_(true) { }
+Caffe::Caffe():random_generator_(), mode_(Caffe::CPU),solver_count_(1), root_solver_(true) {}
 
-Caffe::~Caffe() { }
+Caffe::~Caffe() {}
 
-void Caffe::set_random_seed(const unsigned int seed) {
+
+void Caffe::set_random_seed(const unsigned int seed) 
+{
   // RNG seed
   Get().random_generator_.reset(new RNG(seed));
 }
 
-void Caffe::SetDevice(const int device_id) {
+
+void Caffe::SetDevice(const int device_id) 
+{
   NO_GPU;
 }
 
-void Caffe::DeviceQuery() {
+
+void Caffe::DeviceQuery() 
+{
   NO_GPU;
 }
 
 
-class Caffe::RNG::Generator {
- public:
-  Generator() : rng_(new caffe::rng_t(cluster_seedgen())) {}
-  explicit Generator(unsigned int seed) : rng_(new caffe::rng_t(seed)) {}
-  caffe::rng_t* rng() { return rng_.get(); }
- private:
-  shared_ptr<caffe::rng_t> rng_;
+class Caffe::RNG::Generator 
+{
+    public:
+        Generator() : rng_(new caffe::rng_t(cluster_seedgen())) {}
+        explicit Generator(unsigned int seed) : rng_(new caffe::rng_t(seed)) {}
+        caffe::rng_t* rng() { return rng_.get(); }
+
+    private:
+        shared_ptr<caffe::rng_t> rng_;
 };
 
-Caffe::RNG::RNG() : generator_(new Generator()) { }
 
-Caffe::RNG::RNG(unsigned int seed) : generator_(new Generator(seed)) { }
+Caffe::RNG::RNG() : generator_(new Generator()) {}
 
-Caffe::RNG& Caffe::RNG::operator=(const RNG& other) {
+Caffe::RNG::RNG(unsigned int seed) : generator_(new Generator(seed)) {}
+
+Caffe::RNG& Caffe::RNG::operator=(const RNG& other) 
+{
   generator_ = other.generator_;
   return *this;
 }
 
-void* Caffe::RNG::generator() {
+
+void* Caffe::RNG::generator() 
+{
   return static_cast<void*>(generator_->rng());
 }
 
 #else  // Normal GPU + CPU Caffe.
 
 Caffe::Caffe()
-    : cublas_handle_(NULL), curand_generator_(NULL), random_generator_(),
-    mode_(Caffe::CPU), solver_count_(1), root_solver_(true) {
+      :cublas_handle_(NULL),
+       curand_generator_(NULL), 
+       random_generator_(),
+       mode_(Caffe::CPU), 
+       solver_count_(1), 
+       root_solver_(true) 
+{
   // Try to create a cublas handler, and report an error if failed (but we will
   // keep the program running as one might just want to run CPU code).
-  if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+  if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) 
+  {
     LOG(ERROR) << "Cannot create Cublas handle. Cublas won't be available.";
   }
+
   // Try to create a curand handler.
   if (curandCreateGenerator(&curand_generator_, CURAND_RNG_PSEUDO_DEFAULT)
       != CURAND_STATUS_SUCCESS ||
       curandSetPseudoRandomGeneratorSeed(curand_generator_, cluster_seedgen())
-      != CURAND_STATUS_SUCCESS) {
+      != CURAND_STATUS_SUCCESS) 
+  {
     LOG(ERROR) << "Cannot create Curand generator. Curand won't be available.";
   }
 }
 
-Caffe::~Caffe() {
+
+Caffe::~Caffe() 
+{
   if (cublas_handle_) CUBLAS_CHECK(cublasDestroy(cublas_handle_));
-  if (curand_generator_) {
+  if (curand_generator_) 
+  {
     CURAND_CHECK(curandDestroyGenerator(curand_generator_));
   }
 }
 
-void Caffe::set_random_seed(const unsigned int seed) {
+
+void Caffe::set_random_seed(const unsigned int seed) 
+{
   // Curand seed
   static bool g_curand_availability_logged = false;
-  if (Get().curand_generator_) {
+  if (Get().curand_generator_) 
+  {
     CURAND_CHECK(curandSetPseudoRandomGeneratorSeed(curand_generator(),
         seed));
     CURAND_CHECK(curandSetGeneratorOffset(curand_generator(), 0));
-  } else {
-    if (!g_curand_availability_logged) {
+  } 
+  else 
+  {
+    if (!g_curand_availability_logged) 
+    {
         LOG(ERROR) <<
             "Curand not available. Skipping setting the curand seed.";
         g_curand_availability_logged = true;
@@ -137,17 +172,21 @@ void Caffe::set_random_seed(const unsigned int seed) {
   Get().random_generator_.reset(new RNG(seed));
 }
 
-void Caffe::SetDevice(const int device_id) {
+
+void Caffe::SetDevice(const int device_id) 
+{
   int current_device;
   CUDA_CHECK(cudaGetDevice(&current_device));
-  if (current_device == device_id) {
+  if (current_device == device_id) 
+  {
     return;
   }
   // The call to cudaSetDevice must come before any calls to Get, which
   // may perform initialization using the GPU.
   CUDA_CHECK(cudaSetDevice(device_id));
   if (Get().cublas_handle_) CUBLAS_CHECK(cublasDestroy(Get().cublas_handle_));
-  if (Get().curand_generator_) {
+  if (Get().curand_generator_) 
+  {
     CURAND_CHECK(curandDestroyGenerator(Get().curand_generator_));
   }
   CUBLAS_CHECK(cublasCreate(&Get().cublas_handle_));
@@ -157,13 +196,17 @@ void Caffe::SetDevice(const int device_id) {
       cluster_seedgen()));
 }
 
-void Caffe::DeviceQuery() {
+
+void Caffe::DeviceQuery() 
+{
   cudaDeviceProp prop;
   int device;
-  if (cudaSuccess != cudaGetDevice(&device)) {
+  if (cudaSuccess != cudaGetDevice(&device)) 
+  {
     printf("No cuda device present.\n");
     return;
   }
+
   CUDA_CHECK(cudaGetDeviceProperties(&prop, device));
   LOG(INFO) << "Device id:                     " << device;
   LOG(INFO) << "Major revision number:         " << prop.major;
@@ -193,7 +236,8 @@ void Caffe::DeviceQuery() {
 }
 
 
-class Caffe::RNG::Generator {
+class Caffe::RNG::Generator 
+{
  public:
   Generator() : rng_(new caffe::rng_t(cluster_seedgen())) {}
   explicit Generator(unsigned int seed) : rng_(new caffe::rng_t(seed)) {}
@@ -202,21 +246,27 @@ class Caffe::RNG::Generator {
   shared_ptr<caffe::rng_t> rng_;
 };
 
-Caffe::RNG::RNG() : generator_(new Generator()) { }
+Caffe::RNG::RNG() : generator_(new Generator()) {}
 
-Caffe::RNG::RNG(unsigned int seed) : generator_(new Generator(seed)) { }
+Caffe::RNG::RNG(unsigned int seed) : generator_(new Generator(seed)) {}
 
-Caffe::RNG& Caffe::RNG::operator=(const RNG& other) {
+Caffe::RNG& Caffe::RNG::operator=(const RNG& other) 
+{
   generator_.reset(other.generator_.get());
   return *this;
 }
 
-void* Caffe::RNG::generator() {
+
+void* Caffe::RNG::generator() 
+{
   return static_cast<void*>(generator_->rng());
 }
 
-const char* cublasGetErrorString(cublasStatus_t error) {
-  switch (error) {
+
+const char* cublasGetErrorString(cublasStatus_t error) 
+{
+  switch (error) 
+  {
   case CUBLAS_STATUS_SUCCESS:
     return "CUBLAS_STATUS_SUCCESS";
   case CUBLAS_STATUS_NOT_INITIALIZED:
@@ -245,7 +295,9 @@ const char* cublasGetErrorString(cublasStatus_t error) {
   return "Unknown cublas status";
 }
 
-const char* curandGetErrorString(curandStatus_t error) {
+
+const char* curandGetErrorString(curandStatus_t error) 
+{
   switch (error) {
   case CURAND_STATUS_SUCCESS:
     return "CURAND_STATUS_SUCCESS";
@@ -279,4 +331,5 @@ const char* curandGetErrorString(curandStatus_t error) {
 
 #endif  // CPU_ONLY
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

@@ -40,7 +40,11 @@ message Datum {
   optional bool encoded = 7 [default = false];
 }
 
-message FillerParameter {
+
+/*
+*/
+message FillerParameter 
+{
   // The filler type.
   optional string type = 1 [default = 'constant'];
   optional float value = 2 [default = 0]; // the value in constant filler
@@ -48,12 +52,15 @@ message FillerParameter {
   optional float max = 4 [default = 1]; // the max value in uniform filler
   optional float mean = 5 [default = 0]; // the mean value in Gaussian filler
   optional float std = 6 [default = 1]; // the std value in Gaussian filler
+
   // The expected number of non-zero output weights for a given input in
   // Gaussian filler -- the default -1 means don't perform sparsification.
   optional int32 sparse = 7 [default = -1];
+
   // Normalize the filler variance by fan_in, fan_out, or their average.
   // Applies to 'xavier' and 'msra' fillers.
-  enum VarianceNorm {
+  enum VarianceNorm 
+  {
     FAN_IN = 0;
     FAN_OUT = 1;
     AVERAGE = 2;
@@ -61,7 +68,11 @@ message FillerParameter {
   optional VarianceNorm variance_norm = 8 [default = FAN_IN];
 }
 
-message NetParameter {
+
+/*
+*/
+message NetParameter 
+{
   optional string name = 1; // consider giving the network a name
   // The input blobs to the network.
   repeated string input = 3;
@@ -303,11 +314,13 @@ message ParamSpec {
   optional float decay_mult = 4 [default = 1.0];
 }
 
+
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
 // LayerParameter next available layer-specific ID: 143 (last added: scale_param)
-message LayerParameter {
+message LayerParameter 
+{
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
   repeated string bottom = 3; // the name of each bottom blob

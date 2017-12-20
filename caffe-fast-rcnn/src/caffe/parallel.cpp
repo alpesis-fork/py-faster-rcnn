@@ -13,8 +13,10 @@
 #include "caffe/parallel.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
-enum Op {
+enum Op 
+{
   copy,
   replace_cpu,
   replace_gpu,
@@ -22,14 +24,20 @@ enum Op {
   replace_gpu_diff
 };
 
+
 template<typename Dtype>
 static void apply_buffers(const vector<Blob<Dtype>*>& blobs,
-                          Dtype* buffer, size_t total_size, Op op) {
+                          Dtype* buffer, 
+                          size_t total_size, Op op) 
+{
   Dtype* ptr = buffer;
-  for (int i = 0; i < blobs.size(); ++i) {
+  for (int i = 0; i < blobs.size(); ++i) 
+  {
     int size = blobs[i]->count();
-    switch (op) {
-      case copy: {
+    switch (op) 
+    {
+      case copy: 
+      {
         // Init buffer to current values of blobs
         caffe_copy(size,
                    reinterpret_cast<const Dtype*>(blobs[i]->data()->cpu_data()),
@@ -55,9 +63,11 @@ static void apply_buffers(const vector<Blob<Dtype>*>& blobs,
   CHECK_EQ(total_size, (ptr == buffer ? 1 : ptr - buffer));
 }
 
+
 // Buffer size necessary to store given blobs
 template<typename Dtype>
-static size_t total_size(const vector<Blob<Dtype>*>& params) {
+static size_t total_size(const vector<Blob<Dtype>*>& params) 
+{
   size_t size = 0;
   for (int i = 0; i < params.size(); ++i)
     size += params[i]->count();
@@ -66,16 +76,20 @@ static size_t total_size(const vector<Blob<Dtype>*>& params) {
   return (size > 0) ? size : 1;
 }
 
+
 template<typename Dtype>
 Params<Dtype>::Params(shared_ptr<Solver<Dtype> > root_solver)
-    : size_(total_size<Dtype>(root_solver->net()->learnable_params())),
-      data_(),
-      diff_() {
+              :size_(total_size<Dtype>(root_solver->net()->learnable_params())),
+               data_(),
+               diff_() 
+{
 }
+
 
 template<typename Dtype>
 GPUParams<Dtype>::GPUParams(shared_ptr<Solver<Dtype> > root_solver, int device)
-    : Params<Dtype>(root_solver) {
+                 :Params<Dtype>(root_solver) 
+{
 #ifndef CPU_ONLY
   int initial_device;
   CUDA_CHECK(cudaGetDevice(&initial_device));
@@ -98,23 +112,29 @@ GPUParams<Dtype>::GPUParams(shared_ptr<Solver<Dtype> > root_solver, int device)
 #endif
 }
 
+
 template<typename Dtype>
-GPUParams<Dtype>::~GPUParams() {
+GPUParams<Dtype>::~GPUParams() 
+{
 #ifndef CPU_ONLY
   CUDA_CHECK(cudaFree(data_));
   CUDA_CHECK(cudaFree(diff_));
 #endif
 }
 
+
 template<typename Dtype>
-void GPUParams<Dtype>::configure(Solver<Dtype>* solver) const {
+void GPUParams<Dtype>::configure(Solver<Dtype>* solver) const 
+{
   const vector<Blob<Dtype>*>& net =
       solver->net()->learnable_params();
   apply_buffers(net, data_, size_, replace_gpu);
   apply_buffers(net, diff_, size_, replace_gpu_diff);
 }
 
-void DevicePair::compute(const vector<int> devices, vector<DevicePair>* pairs) {
+
+void DevicePair::compute(const vector<int> devices, vector<DevicePair>* pairs) 
+{
 #ifndef CPU_ONLY
   vector<int> remaining(devices);
 
@@ -122,14 +142,19 @@ void DevicePair::compute(const vector<int> devices, vector<DevicePair>* pairs) {
   int remaining_depth = static_cast<int>(ceil(log2(remaining.size())));
 
   // Group GPUs by board
-  for (int d = 0; d < remaining_depth; ++d) {
-    for (int i = 0; i < remaining.size(); ++i) {
-      for (int j = i + 1; j < remaining.size(); ++j) {
+  for (int d = 0; d < remaining_depth; ++d) 
+  {
+    for (int i = 0; i < remaining.size(); ++i) 
+    {
+      for (int j = i + 1; j < remaining.size(); ++j) 
+      {
         cudaDeviceProp a, b;
         CUDA_CHECK(cudaGetDeviceProperties(&a, remaining[i]));
         CUDA_CHECK(cudaGetDeviceProperties(&b, remaining[j]));
-        if (a.isMultiGpuBoard && b.isMultiGpuBoard) {
-          if (a.multiGpuBoardGroupID == b.multiGpuBoardGroupID) {
+        if (a.isMultiGpuBoard && b.isMultiGpuBoard) 
+        {
+          if (a.multiGpuBoardGroupID == b.multiGpuBoardGroupID) 
+          {
             pairs->push_back(DevicePair(remaining[i], remaining[j]));
             DLOG(INFO) << "GPU board: " << remaining[i] << ":" << remaining[j];
             remaining.erase(remaining.begin() + j);
@@ -139,8 +164,10 @@ void DevicePair::compute(const vector<int> devices, vector<DevicePair>* pairs) {
       }
     }
   }
+
   ostringstream s;
-  for (int i = 0; i < remaining.size(); ++i) {
+  for (int i = 0; i < remaining.size(); ++i) 
+  {
     s << (i ? ", " : "") << remaining[i];
   }
   DLOG(INFO) << "GPUs paired by boards, remaining: " << s.str();
@@ -201,21 +228,25 @@ void DevicePair::compute(const vector<int> devices, vector<DevicePair>* pairs) {
 template<typename Dtype>
 P2PSync<Dtype>::P2PSync(shared_ptr<Solver<Dtype> > root_solver,
                         P2PSync<Dtype>* parent, const SolverParameter& param)
-    : GPUParams<Dtype>(root_solver, param.device_id()),
-      parent_(parent),
-      children_(),
-      queue_(),
-      initial_iter_(root_solver->iter()),
-      solver_() {
+               :GPUParams<Dtype>(root_solver, param.device_id()),
+                parent_(parent),
+                children_(),
+                queue_(),
+                initial_iter_(root_solver->iter()),
+                solver_() 
+{
 #ifndef CPU_ONLY
   int initial_device;
   CUDA_CHECK(cudaGetDevice(&initial_device));
   const int self = param.device_id();
   CUDA_CHECK(cudaSetDevice(self));
 
-  if (parent == NULL) {
+  if (parent == NULL) 
+  {
     solver_ = root_solver;
-  } else {
+  } 
+  else 
+  {
     Caffe::set_root_solver(false);
     solver_.reset(new WorkerSolver<Dtype>(param, root_solver.get()));
     Caffe::set_root_solver(true);
@@ -223,7 +254,8 @@ P2PSync<Dtype>::P2PSync(shared_ptr<Solver<Dtype> > root_solver,
   this->configure(solver_.get());
   solver_->add_callback(this);
 
-  if (parent) {
+  if (parent) 
+  {
     // Enable p2p access between devices
     const int peer = parent->solver_->param().device_id();
     int access;
@@ -245,20 +277,24 @@ P2PSync<Dtype>::P2PSync(shared_ptr<Solver<Dtype> > root_solver,
 #endif
 }
 
+
 template<typename Dtype>
-P2PSync<Dtype>::~P2PSync() {
+P2PSync<Dtype>::~P2PSync() 
+{
 #ifndef CPU_ONLY
   int initial_device;
   CUDA_CHECK(cudaGetDevice(&initial_device));
   const int self = solver_->param().device_id();
   CUDA_CHECK(cudaSetDevice(self));
 
-  if (parent_) {
+  if (parent_) 
+  {
     CUDA_CHECK(cudaFree(parent_grads_));
     const int peer = parent_->solver_->param().device_id();
     int access;
     CUDA_CHECK(cudaDeviceCanAccessPeer(&access, self, peer));
-    if (access) {
+    if (access) 
+    {
       CUDA_CHECK(cudaDeviceDisablePeerAccess(peer));
     }
   }
@@ -267,8 +303,10 @@ P2PSync<Dtype>::~P2PSync() {
 #endif
 }
 
+
 template<typename Dtype>
-void P2PSync<Dtype>::InternalThreadEntry() {
+void P2PSync<Dtype>::InternalThreadEntry() 
+{
   Caffe::SetDevice(solver_->param().device_id());
   CHECK(Caffe::root_solver());
   Caffe::set_root_solver(false);
@@ -277,14 +315,15 @@ void P2PSync<Dtype>::InternalThreadEntry() {
     // Fetch random seed and modulate by device ID to make sure
     // everyone doesn't have the same seed.  We seem to have some
     // solver instability if we have everyone with the same seed
-    Caffe::set_random_seed(
-        solver_->param().random_seed() + solver_->param().device_id());
+    Caffe::set_random_seed(solver_->param().random_seed() + solver_->param().device_id());
   }
   solver_->Step(solver_->param().max_iter() - initial_iter_);
 }
 
+
 template<typename Dtype>
-void P2PSync<Dtype>::on_start() {
+void P2PSync<Dtype>::on_start() 
+{
 #ifndef CPU_ONLY
 #ifdef DEBUG
   int device;
@@ -321,8 +360,10 @@ void P2PSync<Dtype>::on_start() {
 #endif
 }
 
+
 template<typename Dtype>
-void P2PSync<Dtype>::on_gradients_ready() {
+void P2PSync<Dtype>::on_gradients_ready() 
+{
 #ifndef CPU_ONLY
 #ifdef DEBUG
   int device;
@@ -379,8 +420,10 @@ void P2PSync<Dtype>::on_gradients_ready() {
 #endif
 }
 
+
 template<typename Dtype>
-void P2PSync<Dtype>::run(const vector<int>& gpus) {
+void P2PSync<Dtype>::run(const vector<int>& gpus) 
+{
   // Pair devices for map-reduce synchronization
   vector<DevicePair> pairs;
   DevicePair::compute(gpus, &pairs);
@@ -434,4 +477,5 @@ INSTANTIATE_CLASS(Params);
 INSTANTIATE_CLASS(GPUParams);
 INSTANTIATE_CLASS(P2PSync);
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

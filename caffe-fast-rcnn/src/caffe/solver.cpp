@@ -10,14 +10,18 @@
 #include "caffe/util/upgrade_proto.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
 template<typename Dtype>
-void Solver<Dtype>::SetActionFunction(ActionCallback func) {
+void Solver<Dtype>::SetActionFunction(ActionCallback func) 
+{
   action_request_function_ = func;
 }
 
+
 template<typename Dtype>
-SolverAction::Enum Solver<Dtype>::GetRequestedAction() {
+SolverAction::Enum Solver<Dtype>::GetRequestedAction() 
+{
   if (action_request_function_) {
     // If the external request function has been set, call it.
     return action_request_function_();
@@ -25,24 +29,35 @@ SolverAction::Enum Solver<Dtype>::GetRequestedAction() {
   return SolverAction::NONE;
 }
 
+
 template <typename Dtype>
 Solver<Dtype>::Solver(const SolverParameter& param, const Solver* root_solver)
-    : net_(), callbacks_(), root_solver_(root_solver),
-      requested_early_exit_(false) {
+              :net_(), 
+               callbacks_(), 
+               root_solver_(root_solver),
+               requested_early_exit_(false) 
+{
   Init(param);
 }
 
+
 template <typename Dtype>
 Solver<Dtype>::Solver(const string& param_file, const Solver* root_solver)
-    : net_(), callbacks_(), root_solver_(root_solver),
-      requested_early_exit_(false) {
+              :net_(), 
+               callbacks_(), 
+               root_solver_(root_solver),
+               requested_early_exit_(false) 
+{
   SolverParameter param;
   ReadSolverParamsFromTextFileOrDie(param_file, &param);
   Init(param);
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Init(const SolverParameter& param) {
+void Solver<Dtype>::Init(const SolverParameter& param) 
+{
+
   CHECK(Caffe::root_solver() || root_solver_)
       << "root_solver_ needs to be set for all non-root solvers";
   LOG_IF(INFO, Caffe::root_solver()) << "Initializing solver from parameters: "
@@ -63,8 +78,10 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   current_step_ = 0;
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::InitTrainNet() {
+void Solver<Dtype>::InitTrainNet() 
+{
   const int num_train_nets = param_.has_net() + param_.has_net_param() +
       param_.has_train_net() + param_.has_train_net_param();
   const string& field_names = "net, net_param, train_net, train_net_param";
@@ -108,8 +125,10 @@ void Solver<Dtype>::InitTrainNet() {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::InitTestNets() {
+void Solver<Dtype>::InitTestNets() 
+{
   CHECK(Caffe::root_solver());
   const bool has_net_param = param_.has_net_param();
   const bool has_net_file = param_.has_net();
@@ -190,8 +209,10 @@ void Solver<Dtype>::InitTestNets() {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Step(int iters) {
+void Solver<Dtype>::Step(int iters) 
+{
   vector<Blob<Dtype>*> bottom_vec;
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
@@ -274,8 +295,10 @@ void Solver<Dtype>::Step(int iters) {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Solve(const char* resume_file) {
+void Solver<Dtype>::Solve(const char* resume_file) 
+{
   CHECK(Caffe::root_solver());
   LOG(INFO) << "Solving " << net_->name();
   LOG(INFO) << "Learning Rate Policy: " << param_.lr_policy();
@@ -323,8 +346,10 @@ void Solver<Dtype>::Solve(const char* resume_file) {
   LOG(INFO) << "Optimization Done.";
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::TestAll() {
+void Solver<Dtype>::TestAll() 
+{
   for (int test_net_id = 0;
        test_net_id < test_nets_.size() && !requested_early_exit_;
        ++test_net_id) {
@@ -332,8 +357,10 @@ void Solver<Dtype>::TestAll() {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Test(const int test_net_id) {
+void Solver<Dtype>::Test(const int test_net_id) 
+{
   CHECK(Caffe::root_solver());
   LOG(INFO) << "Iteration " << iter_
             << ", Testing net (#" << test_net_id << ")";
@@ -408,8 +435,10 @@ void Solver<Dtype>::Test(const int test_net_id) {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Snapshot() {
+void Solver<Dtype>::Snapshot() 
+{
   CHECK(Caffe::root_solver());
   string model_filename;
   switch (param_.snapshot_format()) {
@@ -426,8 +455,10 @@ void Solver<Dtype>::Snapshot() {
   SnapshotSolverState(model_filename);
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::CheckSnapshotWritePermissions() {
+void Solver<Dtype>::CheckSnapshotWritePermissions() 
+{
   if (Caffe::root_solver() && param_.snapshot()) {
     CHECK(param_.has_snapshot_prefix())
         << "In solver params, snapshot is specified but snapshot_prefix is not";
@@ -444,14 +475,18 @@ void Solver<Dtype>::CheckSnapshotWritePermissions() {
   }
 }
 
+
 template <typename Dtype>
-string Solver<Dtype>::SnapshotFilename(const string extension) {
+string Solver<Dtype>::SnapshotFilename(const string extension) 
+{
   return param_.snapshot_prefix() + "_iter_" + caffe::format_int(iter_)
     + extension;
 }
 
+
 template <typename Dtype>
-string Solver<Dtype>::SnapshotToBinaryProto() {
+string Solver<Dtype>::SnapshotToBinaryProto() 
+{
   string model_filename = SnapshotFilename(".caffemodel");
   LOG(INFO) << "Snapshotting to binary proto file " << model_filename;
   NetParameter net_param;
@@ -460,16 +495,20 @@ string Solver<Dtype>::SnapshotToBinaryProto() {
   return model_filename;
 }
 
+
 template <typename Dtype>
-string Solver<Dtype>::SnapshotToHDF5() {
+string Solver<Dtype>::SnapshotToHDF5() 
+{
   string model_filename = SnapshotFilename(".caffemodel.h5");
   LOG(INFO) << "Snapshotting to HDF5 file " << model_filename;
   net_->ToHDF5(model_filename, param_.snapshot_diff());
   return model_filename;
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::Restore(const char* state_file) {
+void Solver<Dtype>::Restore(const char* state_file) 
+{
   CHECK(Caffe::root_solver());
   string state_filename(state_file);
   if (state_filename.size() >= 3 &&
@@ -480,9 +519,10 @@ void Solver<Dtype>::Restore(const char* state_file) {
   }
 }
 
+
 template <typename Dtype>
-void Solver<Dtype>::UpdateSmoothedLoss(Dtype loss, int start_iter,
-    int average_loss) {
+void Solver<Dtype>::UpdateSmoothedLoss(Dtype loss, int start_iter, int average_loss) 
+{
   if (losses_.size() < average_loss) {
     losses_.push_back(loss);
     int size = losses_.size();
@@ -496,4 +536,5 @@ void Solver<Dtype>::UpdateSmoothedLoss(Dtype loss, int start_iter,
 
 INSTANTIATE_CLASS(Solver);
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

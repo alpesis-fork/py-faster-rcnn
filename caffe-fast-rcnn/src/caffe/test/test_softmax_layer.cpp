@@ -18,8 +18,7 @@
 namespace caffe {
 
 template <typename TypeParam>
-class SoftmaxLayerTest : public MultiDeviceTest<TypeParam> 
-{
+class SoftmaxLayerTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Dtype Dtype;
  protected:
   SoftmaxLayerTest()
@@ -41,8 +40,7 @@ class SoftmaxLayerTest : public MultiDeviceTest<TypeParam>
 
 TYPED_TEST_CASE(SoftmaxLayerTest, TestDtypesAndDevices);
 
-TYPED_TEST(SoftmaxLayerTest, TestForward) 
-{
+TYPED_TEST(SoftmaxLayerTest, TestForward) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   SoftmaxLayer<Dtype> layer(layer_param);
@@ -76,8 +74,7 @@ TYPED_TEST(SoftmaxLayerTest, TestForward)
   }
 }
 
-TYPED_TEST(SoftmaxLayerTest, TestGradient) 
-{
+TYPED_TEST(SoftmaxLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   SoftmaxLayer<Dtype> layer(layer_param);
@@ -88,8 +85,7 @@ TYPED_TEST(SoftmaxLayerTest, TestGradient)
 
 #ifdef USE_CUDNN
 template <typename Dtype>
-class CuDNNSoftmaxLayerTest : public GPUDeviceTest<Dtype> 
-{
+class CuDNNSoftmaxLayerTest : public GPUDeviceTest<Dtype> {
  protected:
   CuDNNSoftmaxLayerTest()
       : blob_bottom_(new Blob<Dtype>(2, 10, 2, 3)),
@@ -110,8 +106,7 @@ class CuDNNSoftmaxLayerTest : public GPUDeviceTest<Dtype>
 
 TYPED_TEST_CASE(CuDNNSoftmaxLayerTest, TestDtypes);
 
-TYPED_TEST(CuDNNSoftmaxLayerTest, TestForwardCuDNN) 
-{
+TYPED_TEST(CuDNNSoftmaxLayerTest, TestForwardCuDNN) {
   LayerParameter layer_param;
   CuDNNSoftmaxLayer<TypeParam> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
@@ -144,8 +139,7 @@ TYPED_TEST(CuDNNSoftmaxLayerTest, TestForwardCuDNN)
   }
 }
 
-TYPED_TEST(CuDNNSoftmaxLayerTest, TestGradientCuDNN) 
-{
+TYPED_TEST(CuDNNSoftmaxLayerTest, TestGradientCuDNN) {
   LayerParameter layer_param;
   CuDNNSoftmaxLayer<TypeParam> layer(layer_param);
   GradientChecker<TypeParam> checker(1e-2, 1e-3);

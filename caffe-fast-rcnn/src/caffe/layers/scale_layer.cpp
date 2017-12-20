@@ -7,10 +7,12 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
 template <typename Dtype>
 void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                   const vector<Blob<Dtype>*>& top) 
+{
   const ScaleParameter& param = this->layer_param_.scale_param();
   if (bottom.size() == 1 && this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
@@ -64,9 +66,11 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   this->param_propagate_down_.resize(this->blobs_.size(), true);
 }
 
+
 template <typename Dtype>
 void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                const vector<Blob<Dtype>*>& top) 
+{
   const ScaleParameter& param = this->layer_param_.scale_param();
   Blob<Dtype>* scale = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis_ == 0 in special case where scale is a scalar
@@ -105,9 +109,11 @@ void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+
 template <typename Dtype>
-void ScaleLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+void ScaleLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, 
+                                    const vector<Blob<Dtype>*>& top) 
+{
   const Dtype* bottom_data = bottom[0]->cpu_data();
   if (bottom[0] == top[0]) {
     // In-place computation; need to store bottom data before overwriting it.
@@ -133,9 +139,12 @@ void ScaleLayer<Dtype>::Forward_cpu(
   }
 }
 
+
 template <typename Dtype>
 void ScaleLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+                                     const vector<bool>& propagate_down, 
+                                     const vector<Blob<Dtype>*>& bottom) 
+{
   if (bias_layer_ &&
       this->param_propagate_down_[this->param_propagate_down_.size() - 1]) {
     bias_layer_->Backward(top, bias_propagate_down_, bias_bottom_vec_);
@@ -216,4 +225,5 @@ STUB_GPU(ScaleLayer);
 INSTANTIATE_CLASS(ScaleLayer);
 REGISTER_LAYER_CLASS(Scale);
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

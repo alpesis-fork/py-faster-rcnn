@@ -139,9 +139,9 @@ if __name__ == '__main__':
     print '\n\nLoaded network {:s}'.format(caffemodel)
 
     # Warmup on a dummy image
-    im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
-    for i in xrange(2):
-        _, _= im_detect(net, im)
+    # im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
+    # for i in xrange(2):
+    #     _, _= im_detect(net, im)
 
     # im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
     #             '001763.jpg', '004545.jpg']
@@ -151,9 +151,9 @@ if __name__ == '__main__':
         print 'Demo for data/demo/{}'.format(im_name)
         demo(net, im_name)
 
-    # import caffe2wellframe.weights_extractor
+    import caffe2wellframe2.extractor_single
     # import caffe2wellframe.outs_extractor
-    # caffe2wellframe.weights_extractor.extract_weights(net, './check/')
-    # caffe2wellframe.outs_extractor.extract_outputs(net, './check/')
+    caffe2wellframe2.extractor_single.extract_weights(net, './check/')
+    caffe2wellframe2.extractor_single.extract_outputs(net, './check/')
     
     plt.show()

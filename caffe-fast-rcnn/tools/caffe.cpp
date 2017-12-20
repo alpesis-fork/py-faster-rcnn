@@ -3,6 +3,7 @@
 namespace bp = boost::python;
 #endif
 
+#include <iostream>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
@@ -64,13 +65,17 @@ class __Registerer_##func { \
 __Registerer_##func g_registerer_##func; \
 }
 
-static BrewFunction GetBrewFunction(const caffe::string& name) {
-  if (g_brew_map.count(name)) {
+static BrewFunction GetBrewFunction(const caffe::string& name) 
+{
+  if (g_brew_map.count(name)) 
+  {
     return g_brew_map[name];
-  } else {
+  } 
+  else 
+  {
     LOG(ERROR) << "Available caffe actions:";
-    for (BrewMap::iterator it = g_brew_map.begin();
-         it != g_brew_map.end(); ++it) {
+    for (BrewMap::iterator it = g_brew_map.begin(); it != g_brew_map.end(); ++it) 
+    {
       LOG(ERROR) << "\t" << it->first;
     }
     LOG(FATAL) << "Unknown action: " << name;
@@ -151,7 +156,10 @@ caffe::SolverAction::Enum GetRequestedAction(
 }
 
 // Train / Finetune a model.
-int train() {
+int train() 
+{
+  std::cout << "train()" << std::endl;
+
   CHECK_GT(FLAGS_solver.size(), 0) << "Need a solver definition to train.";
   CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())
       << "Give a snapshot to resume training or weights to finetune "
@@ -162,30 +170,37 @@ int train() {
 
   // If the gpus flag is not provided, allow the mode and device to be set
   // in the solver prototxt.
-  if (FLAGS_gpu.size() == 0
-      && solver_param.solver_mode() == caffe::SolverParameter_SolverMode_GPU) {
-      if (solver_param.has_device_id()) {
-          FLAGS_gpu = "" +
-              boost::lexical_cast<string>(solver_param.device_id());
-      } else {  // Set default GPU if unspecified
+  if (FLAGS_gpu.size() == 0 && solver_param.solver_mode() == caffe::SolverParameter_SolverMode_GPU) 
+  {
+      if (solver_param.has_device_id()) 
+      {
+          FLAGS_gpu = "" + boost::lexical_cast<string>(solver_param.device_id());
+      } 
+      else 
+      {  // Set default GPU if unspecified
           FLAGS_gpu = "" + boost::lexical_cast<string>(0);
       }
   }
 
   vector<int> gpus;
   get_gpus(&gpus);
-  if (gpus.size() == 0) {
+  if (gpus.size() == 0) 
+  {
     LOG(INFO) << "Use CPU.";
     Caffe::set_mode(Caffe::CPU);
-  } else {
+  } 
+  else 
+  {
     ostringstream s;
-    for (int i = 0; i < gpus.size(); ++i) {
+    for (int i = 0; i < gpus.size(); ++i) 
+    {
       s << (i ? ", " : "") << gpus[i];
     }
     LOG(INFO) << "Using GPUs " << s.str();
 #ifndef CPU_ONLY
     cudaDeviceProp device_prop;
-    for (int i = 0; i < gpus.size(); ++i) {
+    for (int i = 0; i < gpus.size(); ++i) 
+    {
       cudaGetDeviceProperties(&device_prop, gpus[i]);
       LOG(INFO) << "GPU " << gpus[i] << ": " << device_prop.name;
     }
@@ -200,19 +215,24 @@ int train() {
         GetRequestedAction(FLAGS_sigint_effect),
         GetRequestedAction(FLAGS_sighup_effect));
 
+  std::cout << "create solver" << std::endl;
   shared_ptr<caffe::Solver<float> >
       solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
 
   solver->SetActionFunction(signal_handler.GetActionFunction());
 
-  if (FLAGS_snapshot.size()) {
+  if (FLAGS_snapshot.size()) 
+  {
     LOG(INFO) << "Resuming from " << FLAGS_snapshot;
     solver->Restore(FLAGS_snapshot.c_str());
-  } else if (FLAGS_weights.size()) {
+  } 
+  else if (FLAGS_weights.size()) 
+  {
     CopyLayers(solver.get(), FLAGS_weights);
   }
 
-  if (gpus.size() > 1) {
+  if (gpus.size() > 1) 
+  {
     caffe::P2PSync<float> sync(solver, NULL, solver->param());
     sync.run(gpus);
   } else {
@@ -226,14 +246,18 @@ RegisterBrewFunction(train);
 
 
 // Test: score a model.
-int test() {
+int test() 
+{
+  std::cout << "test()" << std::endl;
+
   CHECK_GT(FLAGS_model.size(), 0) << "Need a model definition to score.";
   CHECK_GT(FLAGS_weights.size(), 0) << "Need model weights to score.";
 
   // Set device id and mode
   vector<int> gpus;
   get_gpus(&gpus);
-  if (gpus.size() != 0) {
+  if (gpus.size() != 0) 
+  {
     LOG(INFO) << "Use GPU with device ID " << gpus[0];
 #ifndef CPU_ONLY
     cudaDeviceProp device_prop;
@@ -242,7 +266,9 @@ int test() {
 #endif
     Caffe::SetDevice(gpus[0]);
     Caffe::set_mode(Caffe::GPU);
-  } else {
+  } 
+  else 
+  {
     LOG(INFO) << "Use CPU.";
     Caffe::set_mode(Caffe::CPU);
   }
@@ -255,20 +281,25 @@ int test() {
   vector<int> test_score_output_id;
   vector<float> test_score;
   float loss = 0;
-  for (int i = 0; i < FLAGS_iterations; ++i) {
+  for (int i = 0; i < FLAGS_iterations; ++i) 
+  {
     float iter_loss;
-    const vector<Blob<float>*>& result =
-        caffe_net.Forward(bottom_vec, &iter_loss);
+    const vector<Blob<float>*>& result = caffe_net.Forward(bottom_vec, &iter_loss);
     loss += iter_loss;
     int idx = 0;
-    for (int j = 0; j < result.size(); ++j) {
+    for (int j = 0; j < result.size(); ++j) 
+    {
       const float* result_vec = result[j]->cpu_data();
-      for (int k = 0; k < result[j]->count(); ++k, ++idx) {
+      for (int k = 0; k < result[j]->count(); ++k, ++idx) 
+      {
         const float score = result_vec[k];
-        if (i == 0) {
+        if (i == 0) 
+        {
           test_score.push_back(score);
           test_score_output_id.push_back(j);
-        } else {
+        } 
+        else 
+        {
           test_score[idx] += score;
         }
         const std::string& output_name = caffe_net.blob_names()[
@@ -279,7 +310,8 @@ int test() {
   }
   loss /= FLAGS_iterations;
   LOG(INFO) << "Loss: " << loss;
-  for (int i = 0; i < test_score.size(); ++i) {
+  for (int i = 0; i < test_score.size(); ++i) 
+  {
     const std::string& output_name = caffe_net.blob_names()[
         caffe_net.output_blob_indices()[test_score_output_id[i]]];
     const float loss_weight = caffe_net.blob_loss_weights()[
@@ -387,7 +419,8 @@ int time() {
 }
 RegisterBrewFunction(time);
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
   // Print output to stderr (while still logging).
   FLAGS_alsologtostderr = 1;
   // Set version
@@ -402,7 +435,8 @@ int main(int argc, char** argv) {
       "  time            benchmark model execution time");
   // Run tool or show usage.
   caffe::GlobalInit(&argc, &argv);
-  if (argc == 2) {
+  if (argc == 2) 
+  {
 #ifdef WITH_PYTHON_LAYER
     try {
 #endif

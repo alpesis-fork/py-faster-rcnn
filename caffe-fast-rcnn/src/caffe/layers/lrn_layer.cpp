@@ -1,4 +1,5 @@
 #include <vector>
+#include <iostream>
 
 #include "caffe/layers/lrn_layer.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -7,7 +8,10 @@ namespace caffe {
 
 template <typename Dtype>
 void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+                                 const vector<Blob<Dtype>*>& top) 
+{
+  std::cout << "(LRNLayer) LayerSetUp: " << std::endl;
+
   size_ = this->layer_param_.lrn_param().local_size();
   CHECK_EQ(size_ % 2, 1) << "LRN only supports odd values for local_size";
   pre_pad_ = (size_ - 1) / 2;

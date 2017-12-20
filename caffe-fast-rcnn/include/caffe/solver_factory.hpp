@@ -51,18 +51,21 @@ template <typename Dtype>
 class Solver;
 
 template <typename Dtype>
-class SolverRegistry {
+class SolverRegistry 
+{
  public:
   typedef Solver<Dtype>* (*Creator)(const SolverParameter&);
   typedef std::map<string, Creator> CreatorRegistry;
 
-  static CreatorRegistry& Registry() {
+  static CreatorRegistry& Registry() 
+  {
     static CreatorRegistry* g_registry_ = new CreatorRegistry();
     return *g_registry_;
   }
 
   // Adds a creator.
-  static void AddCreator(const string& type, Creator creator) {
+  static void AddCreator(const string& type, Creator creator) 
+  {
     CreatorRegistry& registry = Registry();
     CHECK_EQ(registry.count(type), 0)
         << "Solver type " << type << " already registered.";
@@ -70,7 +73,8 @@ class SolverRegistry {
   }
 
   // Get a solver using a SolverParameter.
-  static Solver<Dtype>* CreateSolver(const SolverParameter& param) {
+  static Solver<Dtype>* CreateSolver(const SolverParameter& param) 
+  {
     const string& type = param.type();
     CreatorRegistry& registry = Registry();
     CHECK_EQ(registry.count(type), 1) << "Unknown solver type: " << type
@@ -78,7 +82,8 @@ class SolverRegistry {
     return registry[type](param);
   }
 
-  static vector<string> SolverTypeList() {
+  static vector<string> SolverTypeList() 
+  {
     CreatorRegistry& registry = Registry();
     vector<string> solver_types;
     for (typename CreatorRegistry::iterator iter = registry.begin();
@@ -93,7 +98,8 @@ class SolverRegistry {
   // static variables.
   SolverRegistry() {}
 
-  static string SolverTypeListString() {
+  static string SolverTypeListString() 
+  {
     vector<string> solver_types = SolverTypeList();
     string solver_types_str;
     for (vector<string>::iterator iter = solver_types.begin();

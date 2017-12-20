@@ -13,24 +13,30 @@
 #include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
 template <typename TypeParam>
 class LayerFactoryTest : public MultiDeviceTest<TypeParam> {};
 
 TYPED_TEST_CASE(LayerFactoryTest, TestDtypesAndDevices);
 
-TYPED_TEST(LayerFactoryTest, TestCreateLayer) {
+TYPED_TEST(LayerFactoryTest, TestCreateLayer) 
+{
   typedef typename TypeParam::Dtype Dtype;
-  typename LayerRegistry<Dtype>::CreatorRegistry& registry =
-      LayerRegistry<Dtype>::Registry();
+  typename LayerRegistry<Dtype>::CreatorRegistry& registry = LayerRegistry<Dtype>::Registry();
   shared_ptr<Layer<Dtype> > layer;
-  for (typename LayerRegistry<Dtype>::CreatorRegistry::iterator iter =
-       registry.begin(); iter != registry.end(); ++iter) {
+
+  for (typename LayerRegistry<Dtype>::CreatorRegistry::iterator iter = registry.begin(); 
+       iter != registry.end(); 
+       ++iter) 
+  {
     // Special case: PythonLayer is checked by pytest
     if (iter->first == "Python") { continue; }
+
     LayerParameter layer_param;
     // Data layers expect a DB
-    if (iter->first == "Data") {
+    if (iter->first == "Data") 
+    {
 #ifdef USE_LEVELDB
       string tmp;
       MakeTempDir(&tmp);
@@ -42,10 +48,12 @@ TYPED_TEST(LayerFactoryTest, TestCreateLayer) {
       continue;
 #endif  // USE_LEVELDB
     }
+
     layer_param.set_type(iter->first);
     layer = LayerRegistry<Dtype>::CreateLayer(layer_param);
     EXPECT_EQ(iter->first, layer->type());
   }
 }
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

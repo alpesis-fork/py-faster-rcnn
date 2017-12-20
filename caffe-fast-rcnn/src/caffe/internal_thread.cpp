@@ -5,20 +5,28 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
+// -----------------------------------------------------------------------------------------------
 
-InternalThread::~InternalThread() {
+InternalThread::~InternalThread() 
+{
   StopInternalThread();
 }
 
-bool InternalThread::is_started() const {
+
+bool InternalThread::is_started() const 
+{
   return thread_ && thread_->joinable();
 }
 
-bool InternalThread::must_stop() {
+
+bool InternalThread::must_stop() 
+{
   return thread_ && thread_->interruption_requested();
 }
 
-void InternalThread::StartInternalThread() {
+
+void InternalThread::StartInternalThread() 
+{
   CHECK(!is_started()) << "Threads should persist and not be restarted.";
 
   int device = 0;
@@ -38,8 +46,13 @@ void InternalThread::StartInternalThread() {
   }
 }
 
-void InternalThread::entry(int device, Caffe::Brew mode, int rand_seed,
-    int solver_count, bool root_solver) {
+
+void InternalThread::entry(int device, 
+                           Caffe::Brew mode, 
+                           int rand_seed,
+                           int solver_count, 
+                           bool root_solver) 
+{
 #ifndef CPU_ONLY
   CUDA_CHECK(cudaSetDevice(device));
 #endif
@@ -51,7 +64,9 @@ void InternalThread::entry(int device, Caffe::Brew mode, int rand_seed,
   InternalThreadEntry();
 }
 
-void InternalThread::StopInternalThread() {
+
+void InternalThread::StopInternalThread() 
+{
   if (is_started()) {
     thread_->interrupt();
     try {
@@ -63,4 +78,5 @@ void InternalThread::StopInternalThread() {
   }
 }
 
+// -----------------------------------------------------------------------------------------------
 }  // namespace caffe

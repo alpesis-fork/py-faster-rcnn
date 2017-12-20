@@ -73,6 +73,7 @@ class ProposalLayer(caffe.Layer):
         bbox_deltas = bottom[1].data
         im_info = bottom[2].data[0, :]
 
+
         if DEBUG:
             print 'im_size: ({}, {})'.format(im_info[0], im_info[1])
             print 'scale: {}'.format(im_info[2])
@@ -118,6 +119,7 @@ class ProposalLayer(caffe.Layer):
         # reshape to (1 * H * W * A, 1) where rows are ordered by (h, w, a)
         scores = scores.transpose((0, 2, 3, 1)).reshape((-1, 1))
 
+
         # Convert anchors into proposals via bbox transformations
         proposals = bbox_transform_inv(anchors, bbox_deltas)
 
@@ -130,6 +132,7 @@ class ProposalLayer(caffe.Layer):
         proposals = proposals[keep, :]
         scores = scores[keep]
 
+
         # 4. sort all (proposal, score) pairs by score from highest to lowest
         # 5. take top pre_nms_topN (e.g. 6000)
         order = scores.ravel().argsort()[::-1]
@@ -137,6 +140,7 @@ class ProposalLayer(caffe.Layer):
             order = order[:pre_nms_topN]
         proposals = proposals[order, :]
         scores = scores[order]
+
 
         # 6. apply nms (e.g. threshold = 0.7)
         # 7. take after_nms_topN (e.g. 300)
@@ -146,6 +150,7 @@ class ProposalLayer(caffe.Layer):
             keep = keep[:post_nms_topN]
         proposals = proposals[keep, :]
         scores = scores[keep]
+
 
         # Output rois blob
         # Our RPN implementation only supports a single input image, so all
@@ -159,6 +164,8 @@ class ProposalLayer(caffe.Layer):
         if len(top) > 1:
             top[1].reshape(*(scores.shape))
             top[1].data[...] = scores
+
+
 
     def backward(self, top, propagate_down, bottom):
         """This layer does not propagate gradients."""
